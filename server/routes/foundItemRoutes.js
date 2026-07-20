@@ -7,18 +7,26 @@ const { protect } = require("../middleware/authMiddleware");
 
 const {
     createFoundItem,
-    getAllFoundItems
+    getAllFoundItems,
+    getFoundItemById,
+    updateFoundItem,
+    deleteFoundItem
 } = require("../controllers/foundItemController");
 
 // Public
 router.get("/", getAllFoundItems);
+router.get("/:id", getFoundItemById);
 
 // Protected
-router.post(
-    "/",
+router.post("/", protect, upload.single("image"), createFoundItem);
+
+router.put(
+    "/:id",
     protect,
     upload.single("image"),
-    createFoundItem
+    updateFoundItem
 );
+
+router.delete("/:id", protect, deleteFoundItem);
 
 module.exports = router;
