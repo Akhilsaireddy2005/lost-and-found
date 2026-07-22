@@ -7,9 +7,23 @@ import { useAuth } from "../../context/AuthContext";
 import { getProfile, updateProfile, changePassword } from "../../services/authService";
 import { getMyLostItems, getMyFoundItems } from "../../services/dashboardService";
 import { getImageUrl } from "../../utils/imageUtils";
-import { HiCamera, HiUser, HiEnvelope, HiPhone, HiShieldCheck } from "react-icons/hi2";
-
-const TABS = ["overview", "lost-items", "found-items", "security"];
+import {
+  HiCamera,
+  HiUser,
+  HiEnvelope,
+  HiPhone,
+  HiShieldCheck,
+  HiPencilSquare,
+  HiKey,
+  HiLockClosed,
+  HiMagnifyingGlass,
+  HiArchiveBox,
+  HiPlus,
+  HiCheckCircle,
+  HiSparkles,
+  HiArrowPath,
+  HiXMark,
+} from "react-icons/hi2";
 
 function Profile() {
   const { user: authUser, login } = useAuth();
@@ -99,10 +113,9 @@ function Profile() {
 
       const res = await updateProfile(data);
       setProfileData(res.data.user);
-      // Update auth context with new name
       const token = localStorage.getItem("token");
       if (token) login(token, res.data.user);
-      toast.success("Profile updated!");
+      toast.success("Profile updated successfully!");
       setEditMode(false);
       setAvatarPreview(null);
       setAvatarFile(null);
@@ -117,7 +130,7 @@ function Profile() {
     e.preventDefault();
     const { currentPassword, newPassword, confirmPassword } = passwordForm;
     if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("Please fill all password fields.");
+      toast.error("Please fill in all password fields.");
       return;
     }
     if (newPassword.length < 6) {
@@ -131,7 +144,7 @@ function Profile() {
     try {
       setChangingPw(true);
       await changePassword({ currentPassword, newPassword });
-      toast.success("Password changed successfully!");
+      toast.success("Password updated successfully!");
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to change password.");
@@ -143,8 +156,11 @@ function Profile() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center justify-center min-h-[65vh]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm font-medium text-slate-500">Loading profile...</p>
+          </div>
         </div>
       </MainLayout>
     );
@@ -154,219 +170,398 @@ function Profile() {
   const initial = profileData?.name?.[0]?.toUpperCase() || "U";
 
   const tabConfig = [
-    { id: "overview", label: "Overview", icon: "👤" },
-    { id: "lost-items", label: "My Lost Items", icon: "🔴" },
-    { id: "found-items", label: "My Found Items", icon: "🟢" },
-    { id: "security", label: "Security", icon: "🔒" },
+    { id: "overview", label: "Overview", icon: HiUser },
+    { id: "lost-items", label: "My Lost Items", icon: HiMagnifyingGlass, badge: lostItems.length || undefined },
+    { id: "found-items", label: "My Found Items", icon: HiArchiveBox, badge: foundItems.length || undefined },
+    { id: "security", label: "Security", icon: HiShieldCheck },
   ];
 
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto">
-        {/* Profile Header Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-          <div className="flex items-center gap-5">
-            {/* Avatar */}
-            <div className="relative shrink-0">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover" />
-              ) : (
-                <div className="w-20 h-20 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
-                  {initial}
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Profile Header Hero */}
+        <div className="relative rounded-3xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
+          {/* Header Cover Banner */}
+          <div className="h-36 sm:h-44 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+            <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          </div>
+
+          {/* Profile Card Body */}
+          <div className="px-6 sm:px-8 pb-6 pt-0 relative flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-14 sm:-mt-16">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
+              {/* Avatar Container */}
+              <div className="relative group">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl ring-4 ring-white shadow-md overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-extrabold shrink-0">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{initial}</span>
+                  )}
                 </div>
-              )}
-              {editMode && (
+
                 <button
-                  onClick={() => fileRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-700 transition"
+                  type="button"
+                  onClick={() => {
+                    if (!editMode) setEditMode(true);
+                    setTimeout(() => fileRef.current?.click(), 50);
+                  }}
+                  className="absolute bottom-1 right-1 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg border-2 border-white transition-all transform hover:scale-105"
+                  title="Change avatar"
                 >
-                  <HiCamera className="text-xs" />
+                  <HiCamera className="text-sm" />
                 </button>
-              )}
-              <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+              </div>
+
+              {/* User Identity Details */}
+              <div className="space-y-1 sm:mb-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    {profileData?.name}
+                  </h1>
+                  <span className={`inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-semibold ${
+                    profileData?.role === "admin"
+                      ? "bg-amber-100 text-amber-800 border border-amber-200"
+                      : "bg-blue-50 text-blue-700 border border-blue-100"
+                  }`}>
+                    {profileData?.role === "admin" ? (
+                      <>
+                        <HiSparkles className="text-amber-600" /> Admin
+                      </>
+                    ) : (
+                      <>
+                        <HiCheckCircle className="text-blue-600" /> Verified User
+                      </>
+                    )}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-slate-500 flex items-center gap-2">
+                  <HiEnvelope className="text-slate-400 text-base shrink-0" />
+                  {profileData?.email}
+                </p>
+              </div>
             </div>
 
-            {/* Info */}
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-900">{profileData?.name}</h1>
-              <p className="text-gray-500 text-sm">{profileData?.email}</p>
-              {profileData?.phone && (
-                <p className="text-gray-500 text-sm">{profileData.phone}</p>
-              )}
-              <span className="inline-flex mt-2 items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                {profileData?.role === "admin" ? "👑 Admin" : "👤 User"}
-              </span>
-            </div>
+            {/* Quick Action Button */}
+            {!editMode ? (
+              <button
+                onClick={() => setEditMode(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold shadow-sm transition-all hover:shadow"
+              >
+                <HiPencilSquare className="text-base" /> Edit Profile
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setEditMode(false);
+                  setAvatarPreview(null);
+                  setAvatarFile(null);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition-all"
+              >
+                <HiXMark className="text-base" /> Cancel Editing
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 overflow-x-auto">
-          {tabConfig.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === "overview" && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-gray-900">Profile Information</h2>
-              {!editMode && (
+        {/* Layout Grid: Sidebar Tabs + Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Navigation Sidebar */}
+          <div className="lg:col-span-3 bg-white border border-slate-200/80 rounded-2xl p-2 shadow-sm space-y-1">
+            {tabConfig.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
                 <button
-                  onClick={() => setEditMode(true)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
                 >
-                  Edit Profile
+                  <div className="flex items-center gap-3">
+                    <Icon className={`text-lg ${isActive ? "text-white" : "text-slate-400"}`} />
+                    <span>{tab.label}</span>
+                  </div>
+                  {tab.badge !== undefined && (
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                    }`}>
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
-              )}
-            </div>
+              );
+            })}
+          </div>
 
-            {editMode ? (
-              <form onSubmit={handleProfileSave} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    value={profileForm.name}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={profileForm.phone}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
-                    placeholder="e.g. +91 9876543210"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => { setEditMode(false); setAvatarPreview(null); setAvatarFile(null); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition">Cancel</button>
-                  <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-60">
-                    {saving ? "Saving..." : "Save Changes"}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                {[
-                  { icon: <HiUser />, label: "Full Name", value: profileData?.name },
-                  { icon: <HiEnvelope />, label: "Email Address", value: profileData?.email },
-                  { icon: <HiPhone />, label: "Phone Number", value: profileData?.phone || "Not provided" },
-                  { icon: <HiShieldCheck />, label: "Account Role", value: profileData?.role === "admin" ? "Administrator" : "Regular User" },
-                ].map(({ icon, label, value }) => (
-                  <div key={label} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <span className="text-blue-500 text-lg">{icon}</span>
+          {/* Main Display Panel */}
+          <div className="lg:col-span-9">
+            {/* Overview Tab Content */}
+            {activeTab === "overview" && (
+              <div className="space-y-6">
+                {/* Form or Info Display */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                     <div>
-                      <p className="text-xs text-gray-400 font-medium">{label}</p>
-                      <p className="text-sm font-medium text-gray-800">{value}</p>
+                      <h2 className="text-lg font-bold text-slate-900">Personal Information</h2>
+                      <p className="text-xs text-slate-500">Manage your basic account details and contact information.</p>
                     </div>
                   </div>
-                ))}
+
+                  {editMode ? (
+                    <form onSubmit={handleProfileSave} className="space-y-5 max-w-xl">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                          Full Name
+                        </label>
+                        <div className="relative">
+                          <HiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                          <input
+                            type="text"
+                            value={profileForm.name}
+                            onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))}
+                            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                          Phone Number
+                        </label>
+                        <div className="relative">
+                          <HiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                          <input
+                            type="tel"
+                            value={profileForm.phone}
+                            onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
+                            placeholder="e.g. +91 9876543210"
+                            className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditMode(false);
+                            setAvatarPreview(null);
+                            setAvatarFile(null);
+                          }}
+                          className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition disabled:opacity-60"
+                        >
+                          {saving ? (
+                            <>
+                              <HiArrowPath className="animate-spin text-base" /> Saving...
+                            </>
+                          ) : (
+                            "Save Changes"
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-4">
+                        <div className="p-2.5 rounded-xl bg-blue-100/80 text-blue-600 shrink-0">
+                          <HiUser className="text-xl" />
+                        </div>
+                        <div>
+                          <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Full Name</span>
+                          <span className="text-sm font-bold text-slate-800">{profileData?.name}</span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-4">
+                        <div className="p-2.5 rounded-xl bg-indigo-100/80 text-indigo-600 shrink-0">
+                          <HiEnvelope className="text-xl" />
+                        </div>
+                        <div>
+                          <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Email Address</span>
+                          <span className="text-sm font-bold text-slate-800">{profileData?.email}</span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-4">
+                        <div className="p-2.5 rounded-xl bg-emerald-100/80 text-emerald-600 shrink-0">
+                          <HiPhone className="text-xl" />
+                        </div>
+                        <div>
+                          <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Phone Number</span>
+                          <span className="text-sm font-bold text-slate-800">
+                            {profileData?.phone || <span className="text-slate-400 italic">Not provided</span>}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-4">
+                        <div className="p-2.5 rounded-xl bg-purple-100/80 text-purple-600 shrink-0">
+                          <HiShieldCheck className="text-xl" />
+                        </div>
+                        <div>
+                          <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Account Role</span>
+                          <span className="text-sm font-bold text-slate-800">
+                            {profileData?.role === "admin" ? "Administrator" : "Regular Member"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* My Lost Items Tab */}
+            {activeTab === "lost-items" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-slate-900">My Reported Lost Items</h2>
+                </div>
+
+                {itemsLoading ? (
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+                  </div>
+                ) : lostItems.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center space-y-3">
+                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                      <HiMagnifyingGlass />
+                    </div>
+                    <h3 className="font-bold text-slate-800 text-base">No lost items reported yet</h3>
+                    <p className="text-slate-500 text-sm max-w-sm mx-auto">
+                      If you have lost something recently, report it here so the community can help you find it.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {lostItems.map((item) => (
+                      <ItemCard key={item._id} item={item} type="lost" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* My Found Items Tab */}
+            {activeTab === "found-items" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-slate-900">My Reported Found Items</h2>
+                </div>
+
+                {itemsLoading ? (
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
+                  </div>
+                ) : foundItems.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center space-y-3">
+                    <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                      <HiArchiveBox />
+                    </div>
+                    <h3 className="font-bold text-slate-800 text-base">No found items reported yet</h3>
+                    <p className="text-slate-500 text-sm max-w-sm mx-auto">
+                      Found an item that doesn't belong to you? Report it to reunite it with its owner.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {foundItems.map((item) => (
+                      <ItemCard key={item._id} item={item} type="found" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Security Tab */}
+            {activeTab === "security" && (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm space-y-6">
+                <div className="pb-4 border-b border-slate-100">
+                  <h2 className="text-lg font-bold text-slate-900">Security Settings</h2>
+                  <p className="text-xs text-slate-500">Update your password and maintain account security.</p>
+                </div>
+
+                <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                      Current Password
+                    </label>
+                    <div className="relative">
+                      <HiLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                      <input
+                        type="password"
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
+                        placeholder="Enter current password"
+                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <HiKey className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                      <input
+                        type="password"
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
+                        placeholder="At least 6 characters"
+                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <HiKey className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                      <input
+                        type="password"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+                        placeholder="Re-enter new password"
+                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={changingPw}
+                    className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-sm transition disabled:opacity-60"
+                  >
+                    {changingPw ? (
+                      <>
+                        <HiArrowPath className="animate-spin text-base" /> Updating Password...
+                      </>
+                    ) : (
+                      "Update Password"
+                    )}
+                  </button>
+                </form>
               </div>
             )}
           </div>
-        )}
-
-        {activeTab === "lost-items" && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">My Lost Items</h2>
-            {itemsLoading ? (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
-              </div>
-            ) : lostItems.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-                <p className="text-5xl mb-4">🔍</p>
-                <p className="font-semibold text-gray-800">No lost items yet</p>
-                <p className="text-gray-500 text-sm mt-1">Items you report as lost will appear here.</p>
-              </div>
-            ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {lostItems.map((item) => <ItemCard key={item._id} item={item} type="lost" />)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "found-items" && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">My Found Items</h2>
-            {itemsLoading ? (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
-              </div>
-            ) : foundItems.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-                <p className="text-5xl mb-4">📦</p>
-                <p className="font-semibold text-gray-800">No found items yet</p>
-                <p className="text-gray-500 text-sm mt-1">Items you report as found will appear here.</p>
-              </div>
-            ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {foundItems.map((item) => <ItemCard key={item._id} item={item} type="found" />)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "security" && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">Change Password</h2>
-            <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
-                <input
-                  type="password"
-                  value={passwordForm.currentPassword}
-                  onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
-                  placeholder="Enter current password"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
-                <input
-                  type="password"
-                  value={passwordForm.newPassword}
-                  onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
-                  placeholder="At least 6 characters"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
-                <input
-                  type="password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-                  placeholder="Re-enter new password"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={changingPw}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition disabled:opacity-60"
-              >
-                {changingPw ? "Changing..." : "Change Password"}
-              </button>
-            </form>
-          </div>
-        )}
+        </div>
       </div>
     </MainLayout>
   );
