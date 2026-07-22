@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const fs = require("fs");
 
 // Security Packages
 const helmet = require("helmet");
@@ -32,12 +33,25 @@ connectDB();
 
 const app = express();
 
+// Trust Proxy for Render / Heroku / Vercel
+app.set("trust proxy", 1);
+
+// Ensure uploads folder exists
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // =======================================================
 // Security Middleware
 // =======================================================
 
 // Security Headers
-app.use(helmet());
+app.use(
+    helmet({
+        crossOriginResourcePolicy: false
+    })
+);
 
 // Compress Responses
 app.use(compression());
@@ -48,7 +62,7 @@ app.use(morgan("dev"));
 // Rate Limiter
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,
+    max: 200,
     message: {
         success: false,
         message: "Too many requests. Please try again later."
@@ -62,9 +76,19 @@ app.use(limiter);
 // =======================================================
 
 // CORS
+const allowedOrigins = process.env.CLIENT_URL
+    ? process.env.CLIENT_URL.split(",").map((url) => url.trim())
+    : ["http://localhost:5173"];
+
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
+        origin: (origin, callback) => {
+            if (!origin) return callback(null, true);
+            if (allowedOrigins.includes("*") || allowedOrigins.indexOf(origin) !== -1) {
+                return callback(null, true);
+            }
+            return callback(null, true);
+        },
         credentials: true
     })
 );
@@ -149,5 +173,5 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });

@@ -49,7 +49,7 @@ function Navbar() {
       zIndex: 100,
       boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
     }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
+      <div style={{ maxWidth: 1500, margin: "0 auto", padding: "0 32px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "space-between", height: 68 }}>
 
           {/* ── Logo ── */}

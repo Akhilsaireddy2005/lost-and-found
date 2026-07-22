@@ -5,7 +5,7 @@ function Footer() {
 
   return (
     <footer className="bg-white border-t border-gray-100 mt-auto">
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-[1500px] mx-auto px-6 md:px-10 py-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           {/* Brand */}
           <div className="flex items-center gap-2">

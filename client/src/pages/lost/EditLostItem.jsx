@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import MainLayout from "../../layouts/MainLayout";
-import { createLostItem } from "../../services/lostItemService";
+import { getLostItemById, updateLostItem } from "../../services/lostItemService";
+import { getImageUrl } from "../../utils/imageUtils";
 import { HiArrowLeft, HiPhoto } from "react-icons/hi2";
 
 const CATEGORIES = [
@@ -11,13 +12,16 @@ const CATEGORIES = [
   "Bags", "Clothing", "Accessories", "Books", "Others",
 ];
 
-function CreateLostItem() {
+function EditLostItem() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const fileRef = useRef(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [existingImage, setExistingImage] = useState(null);
   const [focusedField, setFocusedField] = useState(null);
   const [imageHover, setImageHover] = useState(false);
 
@@ -28,6 +32,30 @@ function CreateLostItem() {
     location: "",
     dateLost: "",
   });
+
+  useEffect(() => {
+    fetchItem();
+  }, [id]);
+
+  const fetchItem = async () => {
+    try {
+      const res = await getLostItemById(id);
+      const item = res.data.lostItem;
+      setFormData({
+        title: item.title || "",
+        description: item.description || "",
+        category: item.category || "",
+        location: item.location || "",
+        dateLost: item.dateLost ? item.dateLost.split("T")[0] : "",
+      });
+      setExistingImage(getImageUrl(item.image));
+    } catch (error) {
+      toast.error("Item not found.");
+      navigate("/lost-items");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -52,8 +80,7 @@ function CreateLostItem() {
     }
 
     try {
-      setLoading(true);
-
+      setSaving(true);
       const data = new FormData();
       data.append("title", title);
       data.append("description", description);
@@ -62,14 +89,13 @@ function CreateLostItem() {
       data.append("dateLost", dateLost);
       if (imageFile) data.append("image", imageFile);
 
-      await createLostItem(data);
-
-      toast.success("Lost item reported successfully!");
-      navigate("/lost-items");
+      await updateLostItem(id, data);
+      toast.success("Item updated successfully!");
+      navigate(`/lost-items/${id}`);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to report item.");
+      toast.error(error.response?.data?.message || "Failed to update item.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -94,6 +120,31 @@ function CreateLostItem() {
     color: "#475569",
     marginBottom: 8,
   };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+          <div style={{ textAlign: "center" }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              style={{
+                width: 44, height: 44,
+                border: "4px solid #E2E8F0",
+                borderTopColor: "#2563EB",
+                borderRadius: "50%",
+                margin: "0 auto 16px",
+              }}
+            />
+            <p style={{ color: "#94A3B8", fontSize: 14, fontWeight: 500 }}>Loading item...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const currentImage = imagePreview || existingImage;
 
   return (
     <MainLayout>
@@ -131,23 +182,23 @@ function CreateLostItem() {
           <div style={{
             position: "absolute", top: "-30%", right: "-5%",
             width: 200, height: 200, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(220,38,38,0.2) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%)",
             filter: "blur(30px)", pointerEvents: "none",
           }} />
 
           <div style={{ display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 2 }}>
             <div style={{
               width: 48, height: 48, borderRadius: 14,
-              background: "linear-gradient(135deg, #DC2626, #EF4444)",
+              background: "linear-gradient(135deg, #2563EB, #3B82F6)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22, boxShadow: "0 4px 14px rgba(220,38,38,0.35)",
+              fontSize: 22, boxShadow: "0 4px 14px rgba(37,99,235,0.35)",
             }}>
-              🔴
+              ✏️
             </div>
             <div>
-              <h1 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>Report Lost Item</h1>
+              <h1 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>Edit Lost Item</h1>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", margin: 0, marginTop: 4 }}>
-                Fill in the details below to report your lost item.
+                Update the details of your lost item report.
               </p>
             </div>
           </div>
@@ -170,7 +221,7 @@ function CreateLostItem() {
 
             {/* Image Upload */}
             <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>Item Photo <span style={{ color: "#94A3B8", fontWeight: 400 }}>(optional)</span></label>
+              <label style={labelStyle}>Item Photo</label>
               <div
                 onClick={() => fileRef.current?.click()}
                 onMouseEnter={() => setImageHover(true)}
@@ -181,11 +232,11 @@ function CreateLostItem() {
                   overflow: "hidden",
                   cursor: "pointer",
                   transition: "border-color 0.25s",
-                  height: imagePreview ? "auto" : 180,
+                  height: currentImage ? "auto" : 180,
                 }}
               >
-                {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
+                {currentImage ? (
+                  <img src={currentImage} alt="Preview" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
                 ) : (
                   <div style={{
                     height: "100%", display: "flex", flexDirection: "column",
@@ -194,7 +245,6 @@ function CreateLostItem() {
                   }}>
                     <HiPhoto style={{ fontSize: 40, color: imageHover ? "#3B82F6" : "#CBD5E1", transition: "color 0.2s" }} />
                     <p style={{ fontSize: 14, fontWeight: 500, margin: 0 }}>Click to upload image</p>
-                    <p style={{ fontSize: 12, margin: 0, color: "#CBD5E1" }}>PNG, JPG up to 10MB</p>
                   </div>
                 )}
               </div>
@@ -208,7 +258,7 @@ function CreateLostItem() {
                     background: "none", border: "none", cursor: "pointer",
                   }}
                 >
-                  Remove image
+                  Remove new image
                 </button>
               )}
             </div>
@@ -218,7 +268,6 @@ function CreateLostItem() {
               <label style={labelStyle}>Item Name <span style={{ color: "#EF4444" }}>*</span></label>
               <input
                 type="text" name="title"
-                placeholder="e.g. Black Samsung Galaxy S22"
                 value={formData.title} onChange={handleChange}
                 onFocus={() => setFocusedField("title")}
                 onBlur={() => setFocusedField(null)}
@@ -231,7 +280,6 @@ function CreateLostItem() {
               <label style={labelStyle}>Description <span style={{ color: "#EF4444" }}>*</span></label>
               <textarea
                 name="description" rows={4}
-                placeholder="Describe your item in detail (color, brand, markings, etc.)"
                 value={formData.description} onChange={handleChange}
                 onFocus={() => setFocusedField("description")}
                 onBlur={() => setFocusedField(null)}
@@ -256,10 +304,9 @@ function CreateLostItem() {
                 </select>
               </div>
               <div>
-                <label style={labelStyle}>Last Seen Location <span style={{ color: "#EF4444" }}>*</span></label>
+                <label style={labelStyle}>Location <span style={{ color: "#EF4444" }}>*</span></label>
                 <input
                   type="text" name="location"
-                  placeholder="e.g. Central Park, NYC"
                   value={formData.location} onChange={handleChange}
                   onFocus={() => setFocusedField("location")}
                   onBlur={() => setFocusedField(null)}
@@ -281,21 +328,38 @@ function CreateLostItem() {
               />
             </div>
 
-            {/* Submit */}
-            <button
-              type="submit" disabled={loading}
-              style={{
-                width: "100%", padding: 15, borderRadius: 14,
-                border: "none", fontFamily: "inherit",
-                background: loading ? "rgba(220,38,38,0.5)" : "linear-gradient(135deg, #DC2626, #EF4444)",
-                color: "#fff", fontSize: 15, fontWeight: 700,
-                cursor: loading ? "not-allowed" : "pointer",
-                boxShadow: "0 4px 16px rgba(220,38,38,0.3)",
-                transition: "all 0.25s",
-              }}
-            >
-              {loading ? "Reporting..." : "Report Lost Item"}
-            </button>
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: 14 }}>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                style={{
+                  flex: 1, padding: 14, borderRadius: 14,
+                  border: "1.5px solid #E2E8F0", background: "transparent",
+                  color: "#475569", fontSize: 14, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "inherit",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => { e.target.style.background = "#F8FAFC"; e.target.style.borderColor = "#CBD5E1"; }}
+                onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.borderColor = "#E2E8F0"; }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit" disabled={saving}
+                style={{
+                  flex: 1, padding: 14, borderRadius: 14,
+                  border: "none", fontFamily: "inherit",
+                  background: saving ? "rgba(37,99,235,0.5)" : "linear-gradient(135deg, #2563EB, #3B82F6)",
+                  color: "#fff", fontSize: 14, fontWeight: 700,
+                  cursor: saving ? "not-allowed" : "pointer",
+                  boxShadow: "0 4px 16px rgba(37,99,235,0.3)",
+                  transition: "all 0.25s",
+                }}
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           </form>
         </motion.div>
       </div>
@@ -303,4 +367,4 @@ function CreateLostItem() {
   );
 }
 
-export default CreateLostItem;
+export default EditLostItem;

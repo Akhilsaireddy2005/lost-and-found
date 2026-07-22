@@ -5,9 +5,11 @@ const FoundItem = require("../models/FoundItem");
 // ======================================
 // Create Claim Request
 // ======================================
+// ======================================
+// Create Claim Request
+// ======================================
 const createClaimRequest = async (req, res) => {
     try {
-
         const {
             lostItemId,
             foundItemId,
@@ -22,7 +24,6 @@ const createClaimRequest = async (req, res) => {
         }
 
         const lostItem = await LostItem.findById(lostItemId);
-
         if (!lostItem) {
             return res.status(404).json({
                 success: false,
@@ -31,7 +32,6 @@ const createClaimRequest = async (req, res) => {
         }
 
         const foundItem = await FoundItem.findById(foundItemId);
-
         if (!foundItem) {
             return res.status(404).json({
                 success: false,
@@ -39,19 +39,24 @@ const createClaimRequest = async (req, res) => {
             });
         }
 
-        if (lostItem.owner.toString() !== req.user._id.toString()) {
+        const isLostOwner = lostItem.owner.toString() === req.user._id.toString();
+        const isFoundOwner = foundItem.owner.toString() === req.user._id.toString();
+
+        if (!isLostOwner && !isFoundOwner) {
             return res.status(403).json({
                 success: false,
-                message: "Only the owner of the lost item can send a claim request."
+                message: "You must be either the owner of the lost item or the found item to send a claim."
             });
         }
 
-        if (foundItem.owner.toString() === req.user._id.toString()) {
+        if (isLostOwner && isFoundOwner) {
             return res.status(400).json({
                 success: false,
-                message: "You cannot claim your own found item."
+                message: "You cannot send a claim request for your own items."
             });
         }
+
+        const receiverId = isLostOwner ? foundItem.owner : lostItem.owner;
 
         const existingRequest = await ClaimRequest.findOne({
             lostItem: lostItemId,
@@ -70,7 +75,7 @@ const createClaimRequest = async (req, res) => {
             lostItem: lostItemId,
             foundItem: foundItemId,
             requester: req.user._id,
-            receiver: foundItem.owner,
+            receiver: receiverId,
             message
         });
 
@@ -81,14 +86,11 @@ const createClaimRequest = async (req, res) => {
         });
 
     } catch (error) {
-
         console.error("Create Claim Error:", error);
-
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
 };
 
@@ -96,15 +98,13 @@ const createClaimRequest = async (req, res) => {
 // My Sent Requests
 // ======================================
 const getMyRequests = async (req, res) => {
-
     try {
-
         const requests = await ClaimRequest.find({
             requester: req.user._id
         })
         .populate("lostItem")
         .populate("foundItem")
-        .populate("receiver", "name email")
+        .populate("receiver", "name email phone avatar")
         .sort({ createdAt: -1 });
 
         return res.status(200).json({
@@ -112,33 +112,26 @@ const getMyRequests = async (req, res) => {
             count: requests.length,
             requests
         });
-
     } catch (error) {
-
         console.error("Get My Requests Error:", error);
-
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
-
 };
 
 // ======================================
 // Received Requests
 // ======================================
 const getReceivedRequests = async (req, res) => {
-
     try {
-
         const requests = await ClaimRequest.find({
             receiver: req.user._id
         })
         .populate("lostItem")
         .populate("foundItem")
-        .populate("requester", "name email")
+        .populate("requester", "name email phone avatar")
         .sort({ createdAt: -1 });
 
         return res.status(200).json({
@@ -146,18 +139,13 @@ const getReceivedRequests = async (req, res) => {
             count: requests.length,
             requests
         });
-
     } catch (error) {
-
         console.error("Get Received Requests Error:", error);
-
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
-
 };
 
 // ======================================

@@ -1,4 +1,19 @@
 const LostItem = require("../models/LostItem");
+const fs = require("fs");
+const path = require("path");
+
+// ==========================
+// Helper: Delete image file
+// ==========================
+const deleteImageFile = (imagePath) => {
+    if (!imagePath) return;
+    const fullPath = path.join(__dirname, "..", imagePath);
+    if (fs.existsSync(fullPath)) {
+        fs.unlink(fullPath, (err) => {
+            if (err) console.error("Image delete error:", err);
+        });
+    }
+};
 
 // ==========================
 // Create Lost Item
@@ -185,7 +200,9 @@ const updateLostItem = async (req, res) => {
             });
         }
 
+        // Delete old image if a new one is uploaded
         if (req.file) {
+            deleteImageFile(lostItem.image);
             req.body.image = `/uploads/${req.file.filename}`;
         }
 
@@ -237,6 +254,9 @@ const deleteLostItem = async (req, res) => {
                 message: "You are not authorized."
             });
         }
+
+        // Delete associated image from disk
+        deleteImageFile(lostItem.image);
 
         await lostItem.deleteOne();
 
