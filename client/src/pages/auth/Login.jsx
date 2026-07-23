@@ -71,38 +71,26 @@ function Login() {
       background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
     }}>
 
-      {/* Animated gradient orbs */}
+      {/* Ambient background (mobile optimized without heavy GPU blur) */}
       <div style={{
         position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none",
       }}>
         <motion.div
-          animate={{ x: [0, 30, -20, 0], y: [0, -40, 20, 0], scale: [1, 1.1, 0.95, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           style={{
-            position: "absolute", top: "-10%", left: "-5%",
-            width: 500, height: 500, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%)",
-            filter: "blur(60px)",
+            position: "absolute", top: "-10%", left: "-10%",
+            width: 400, height: 400, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(37,99,235,0.3) 0%, transparent 70%)",
           }}
         />
         <motion.div
-          animate={{ x: [0, -30, 20, 0], y: [0, 30, -20, 0], scale: [1, 0.95, 1.1, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           style={{
             position: "absolute", bottom: "-15%", right: "-10%",
-            width: 600, height: 600, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-        <motion.div
-          animate={{ x: [0, 20, -15, 0], y: [0, -20, 30, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            position: "absolute", top: "60%", left: "30%",
-            width: 300, height: 300, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)",
-            filter: "blur(50px)",
+            width: 450, height: 450, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%)",
           }}
         />
       </div>
@@ -149,13 +137,11 @@ function Login() {
         }}
       >
         <div style={{
-          background: "rgba(255,255,255,0.07)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
+          background: "rgba(30, 41, 59, 0.85)",
           borderRadius: 24,
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid rgba(255,255,255,0.12)",
           padding: "48px 40px",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset",
+          boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
         }}>
 
           {/* Logo / icon */}

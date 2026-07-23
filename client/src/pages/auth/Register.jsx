@@ -121,38 +121,26 @@ function Register() {
       background: "linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)",
     }}>
 
-      {/* Animated gradient orbs */}
+      {/* Gradient ambient background (mobile optimized without heavy GPU blur) */}
       <div style={{
         position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none",
       }}>
         <motion.div
-          animate={{ x: [0, -25, 30, 0], y: [0, 35, -25, 0], scale: [1, 1.15, 0.9, 1] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           style={{
-            position: "absolute", top: "-5%", right: "-5%",
-            width: 550, height: 550, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)",
-            filter: "blur(60px)",
+            position: "absolute", top: "-10%", right: "-10%",
+            width: 400, height: 400, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)",
           }}
         />
         <motion.div
-          animate={{ x: [0, 30, -20, 0], y: [0, -30, 25, 0], scale: [1, 0.9, 1.1, 1] }}
-          transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           style={{
-            position: "absolute", bottom: "-10%", left: "-5%",
-            width: 500, height: 500, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-        <motion.div
-          animate={{ x: [0, -15, 20, 0], y: [0, 25, -15, 0] }}
-          transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            position: "absolute", top: "40%", right: "25%",
-            width: 350, height: 350, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)",
-            filter: "blur(50px)",
+            position: "absolute", bottom: "-10%", left: "-10%",
+            width: 400, height: 400, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(37,99,235,0.3) 0%, transparent 70%)",
           }}
         />
       </div>
@@ -199,13 +187,11 @@ function Register() {
         }}
       >
         <div style={{
-          background: "rgba(255,255,255,0.07)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
+          background: "rgba(30, 41, 59, 0.85)",
           borderRadius: 24,
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid rgba(255,255,255,0.12)",
           padding: "44px 40px",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset",
+          boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
         }}>
 
           {/* Logo / icon */}

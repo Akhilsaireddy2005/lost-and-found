@@ -34,35 +34,25 @@ export default function Home() {
         padding: "100px 24px 110px",
         background: "linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F172A 100%)",
       }}>
-        {/* animated gradient orbs */}
+        {/* animated gradient orbs (mobile GPU optimized) */}
         <motion.div
-          animate={{ x: [0, 40, -20, 0], y: [0, -50, 30, 0], scale: [1, 1.15, 0.9, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           style={{
             position: "absolute", top: "-15%", left: "-8%",
-            width: 600, height: 600, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(37,99,235,0.3) 0%, transparent 70%)",
-            filter: "blur(80px)", pointerEvents: "none",
+            width: 500, height: 500, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 70%)",
+            pointerEvents: "none",
           }}
         />
         <motion.div
-          animate={{ x: [0, -30, 25, 0], y: [0, 40, -30, 0], scale: [1, 0.9, 1.1, 1] }}
-          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           style={{
             position: "absolute", bottom: "-20%", right: "-10%",
-            width: 700, height: 700, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(124,58,237,0.22) 0%, transparent 70%)",
-            filter: "blur(80px)", pointerEvents: "none",
-          }}
-        />
-        <motion.div
-          animate={{ x: [0, 20, -15, 0], y: [0, -25, 20, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            position: "absolute", top: "50%", left: "55%",
-            width: 400, height: 400, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)",
-            filter: "blur(60px)", pointerEvents: "none",
+            width: 500, height: 500, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)",
+            pointerEvents: "none",
           }}
         />
 
